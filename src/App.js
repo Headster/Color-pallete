@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import FileUpload from './components/FileUpload';
+import ColorPallete from './components/ColorPallete';
+import ModelViewer from './components/ModelViewer';
 
-function App() {
+const App = () => {
+  const [showFileUpload, setShowFileUpload] = useState(true);
+  const [showPallete, setShowPallete] = useState(false);
+  const [showViewer, setShowViewer] = useState(false);
+
+  const handleShowPallete = () => {
+    setShowPallete(true);
+  };
+
+  const handleShowViewer = () => {
+    setShowViewer(true);
+    setShowFileUpload(false);
+    setShowPallete(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+    <>
+      {showFileUpload && <FileUpload onFileUpload={handleShowPallete} />}
+      {showPallete && <ColorPallete GenerateNewModel={handleShowViewer} />}
+      {showViewer && <ModelViewer />}
+    </>
+  )
+};
 
 export default App;
