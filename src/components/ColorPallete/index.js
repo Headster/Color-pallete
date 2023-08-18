@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import axios from 'axios';
 import { ColorPicker, useColor } from "react-color-palette";
 import "react-color-palette/css";
 
 import { ColorWrapper, PalleteWrapper, ColorName, ColorBox } from './ColorPallete.styles';
 
 const ColorPalette = ({ colorData, onColorChange }) => {
-    const [color, setColor] = useColor(colorData.color);
+    const [color, setColor] = useColor(colorData);
     const [isOpen, setIsOpen] = useState(false);
     const paletteRef = useRef(null);
 
@@ -29,14 +29,14 @@ const ColorPalette = ({ colorData, onColorChange }) => {
     }, []);
 
     useEffect(() => {
-        if (color.hex !== colorData.color) {
+        if (color.hex !== colorData) {
             onColorChange(color.hex);
         }
-    }, [color, colorData.color, onColorChange]);
+    }, [color, colorData, onColorChange]);
 
     return (
         <ColorWrapper ref={paletteRef}>
-            <ColorName>{colorData.name}:</ColorName>
+            <ColorName>{colorData}:</ColorName>
             <ColorBox style={{ backgroundColor: color.hex }} onClick={togglePalette} />
             {isOpen && (
                 <PalleteWrapper>
@@ -61,25 +61,51 @@ const ColorPaletteList = ({ colorArray, onPaletteColorChange }) => {
     );
 };
 
-const App = ({ GenerateNewModel }) => {
-    const [predefinedColors, setPredefinedColors] = useState([
-        { color: '#561ecb', name: 'Color 1' },
-        { color: '#ffffff', name: 'Color 2' },
-        { color: '#000000', name: 'Color 3' }
-    ]);
+const App = ({ GenerateNewModel, colors, onLoading }) => {
+    // const [predefinedColors, setPredefinedColors] = useState([
+    //     { color: '#561ecb', name: 'Color 1' },
+    //     { color: '#ffffff', name: 'Color 2' },
+    //     { color: '#000000', name: 'Color 3' }
+    // ]);
+
+    const [predefinedColors, setPredefinedColors] = useState(colors['Colors']);
 
     const handlePaletteColorChange = (index, newColor) => {
         setPredefinedColors((prevColors) => {
             const newColors = [...prevColors];
-            newColors[index].color = newColor;
+            newColors[index] = newColor;
             return newColors;
         });
+    };
+
+    const handleGenerateNewModel = () => {
+
+        const originalString = colors['Object url'];
+        const substringToRemove = 'https://cvt-upload-files.s3.eu-north-1.amazonaws.com/';
+        const modifiedUrl = originalString.replace(substringToRemove, '');
+        const colorsArray = predefinedColors.join(' ');
+
+        onLoading(true);
+
+        axios.post('http://3.75.175.62:8080/v1/recolor-mesh/', {
+            product_id: '1',
+            colors: colorsArray,
+            input_obj_link: modifiedUrl
+        })
+            .then(response => {
+                console.log('Response: ', response.data);
+                GenerateNewModel(response.data);
+                onLoading(false);
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+            });
     };
 
     return (
         <>
             <ColorPaletteList colorArray={predefinedColors} onPaletteColorChange={handlePaletteColorChange} />
-            <button onClick={GenerateNewModel}>Generate new model</button>
+            <button onClick={handleGenerateNewModel}>Generate new model</button>
         </>
     );
 };
