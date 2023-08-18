@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Wrapper, DownloadBtn } from './ModelViewer.styles';
 import Ring from './diamond_ring.glb';
 
-const ModelViewer = () => {
+const ModelViewer = ({ newModelUrl }) => {
     const [modelData, setModelData] = useState(null);
 
     // Example model URL
-    const modelUrl = Ring;
+    const modelUrl = newModelUrl['Object url'];
 
     return (
         <Wrapper>
